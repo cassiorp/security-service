@@ -1,9 +1,7 @@
 package com.cassiorp.auth.api.controller;
 
 
-import com.cassiorp.auth.api.dto.LoginResponse;
-import com.cassiorp.auth.api.dto.LoginUserDto;
-import com.cassiorp.auth.api.dto.RegisterUserDto;
+import com.cassiorp.auth.api.dto.*;
 import com.cassiorp.auth.entity.User;
 import com.cassiorp.auth.service.AuthenticationService;
 import com.cassiorp.auth.service.JwtService;
@@ -41,4 +39,10 @@ public class AuthenticationController {
 
         return ResponseEntity.ok(loginResponse);
     }
+
+    @PostMapping("/validate")
+    public void validateToken(@RequestBody String token) {
+        jwtService.valitadeToken(token);
+    }
+
 }
