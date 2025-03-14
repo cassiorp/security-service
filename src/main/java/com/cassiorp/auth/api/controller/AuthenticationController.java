@@ -4,45 +4,40 @@ package com.cassiorp.auth.api.controller;
 import com.cassiorp.auth.api.dto.*;
 import com.cassiorp.auth.entity.User;
 import com.cassiorp.auth.service.AuthenticationService;
-import com.cassiorp.auth.service.JwtService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import static com.cassiorp.auth.api.converter.UserConverter.toDTO;
+import static com.cassiorp.auth.api.converter.UserConverter.toEntity;
+
 @RequestMapping("/auth")
 @RestController
 public class AuthenticationController {
-    private final JwtService jwtService;
-    private final AuthenticationService authenticationService;
 
-    public AuthenticationController(JwtService jwtService, AuthenticationService authenticationService) {
-        this.jwtService = jwtService;
-        this.authenticationService = authenticationService;
-    }
+  private final AuthenticationService authenticationService;
 
-    @PostMapping("/signup")
-    public ResponseEntity<User> register(@RequestBody RegisterUserDto registerUserDto) {
-        User registeredUser = authenticationService.signup(registerUserDto);
+  public AuthenticationController(AuthenticationService authenticationService) {
+    this.authenticationService = authenticationService;
+  }
 
-        return ResponseEntity.ok(registeredUser);
-    }
+  @PostMapping("/signup")
+  public ResponseEntity<UserResponseDTO> signup(@RequestBody UserRequestDTO userRequestDTO) {
+    UserResponseDTO user = authenticationService.signup(userRequestDTO);
+    return new ResponseEntity<>(user, HttpStatus.CREATED);
+  }
 
-    @PostMapping("/login")
-    public ResponseEntity<LoginResponse> authenticate(@RequestBody LoginUserDto loginUserDto) {
-        User authenticatedUser = authenticationService.authenticate(loginUserDto);
+  @PostMapping("/login")
+  public ResponseEntity<LoginResponseDTO> login(@RequestBody LoginRequestDTO loginRequestDTO) {
+    LoginResponseDTO loginResponseDTO = authenticationService.authenticateUser(loginRequestDTO);
+    return ResponseEntity.ok(loginResponseDTO);
+  }
 
-        String jwtToken = jwtService.generateToken(authenticatedUser);
-
-        LoginResponse loginResponse = new LoginResponse().setToken(jwtToken).setExpiresIn(jwtService.getExpirationTime());
-
-        return ResponseEntity.ok(loginResponse);
-    }
-
-    @PostMapping("/validate")
-    public void validateToken(@RequestBody String token) {
-        jwtService.valitadeToken(token);
-    }
-
+  @PostMapping("/validate")
+  public void validate(@RequestBody String token) {
+    authenticationService.validateToken(token);
+  }
 }

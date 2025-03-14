@@ -1,6 +1,6 @@
 package com.cassiorp.auth.api.dto;
 
-public class RegisterUserDto {
+public class UserRequestDTO {
     private String email;
     private String password;
     private String fullName;
@@ -9,7 +9,7 @@ public class RegisterUserDto {
         return email;
     }
 
-    public RegisterUserDto setEmail(String email) {
+    public UserRequestDTO setEmail(String email) {
         this.email = email;
         return this;
     }
@@ -18,7 +18,7 @@ public class RegisterUserDto {
         return password;
     }
 
-    public RegisterUserDto setPassword(String password) {
+    public UserRequestDTO setPassword(String password) {
         this.password = password;
         return this;
     }
@@ -27,7 +27,7 @@ public class RegisterUserDto {
         return fullName;
     }
 
-    public RegisterUserDto setFullName(String fullName) {
+    public UserRequestDTO setFullName(String fullName) {
         this.fullName = fullName;
         return this;
     }
