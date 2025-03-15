@@ -1,20 +1,51 @@
 package com.cassiorp.auth.service;
 
+import com.cassiorp.auth.api.dto.LoginRequestDTO;
 import com.cassiorp.auth.entity.User;
+import com.cassiorp.auth.exception.ConflictException;
+import com.cassiorp.auth.exception.EntityNotFoundException;
 import com.cassiorp.auth.repository.UserRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 public class UserService {
-    private final UserRepository userRepository;
 
-    public UserService(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
+  private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    public List<User> allUsers() {
-        return userRepository.findAll();
+  public static final String EMAIL_ALREADY_EXISTS = "Email already exists!";
+  private static final String USER_NOT_FOUND_ERROR = "User not found";
+
+  private final UserRepository userRepository;
+  private final PasswordEncoder passwordEncoder;
+
+  public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    this.userRepository = userRepository;
+    this.passwordEncoder = passwordEncoder;
+  }
+
+  public User createUser(User user) {
+    validateIfEmailAlreadyExists(user.getEmail());
+    encondePassword(user);
+    return userRepository.save(user);
+  }
+
+  private void encondePassword(User user) {
+    user.setPassword(passwordEncoder.encode(user.getPassword()));
+  }
+
+  private void validateIfEmailAlreadyExists(String email) {
+    if (userRepository.findByEmail(email).isPresent()) {
+      logger.error(EMAIL_ALREADY_EXISTS);
+      throw new ConflictException(EMAIL_ALREADY_EXISTS);
     }
+  }
+
+  public User findUserById(LoginRequestDTO loginRequestDTO) {
+    return userRepository
+        .findByEmail(loginRequestDTO.email())
+        .orElseThrow(() -> new EntityNotFoundException(USER_NOT_FOUND_ERROR));
+  }
 }

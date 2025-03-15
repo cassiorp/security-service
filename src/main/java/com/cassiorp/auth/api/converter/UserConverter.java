@@ -19,9 +19,9 @@ public class UserConverter {
 
   public static User toEntity(UserRequestDTO userRequestDTO) {
     return User.builder()
-        .email(userRequestDTO.getEmail())
-        .fullName(userRequestDTO.getFullName())
-        .password(userRequestDTO.getPassword())
+        .email(userRequestDTO.email())
+        .fullName(userRequestDTO.fullName())
+        .password(userRequestDTO.password())
         .build();
   }
 }

@@ -1,43 +1,14 @@
 package com.cassiorp.auth.api.dto;
 
-public class UserRequestDTO {
-    private String email;
-    private String password;
-    private String fullName;
+import jakarta.validation.constraints.NotBlank;
+import lombok.Builder;
 
-    public String getEmail() {
-        return email;
-    }
-
-    public UserRequestDTO setEmail(String email) {
-        this.email = email;
-        return this;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public UserRequestDTO setPassword(String password) {
-        this.password = password;
-        return this;
-    }
-
-    public String getFullName() {
-        return fullName;
-    }
-
-    public UserRequestDTO setFullName(String fullName) {
-        this.fullName = fullName;
-        return this;
-    }
-
-    @Override
-    public String toString() {
-        return "RegisterUserDto{" +
-                "email='" + email + '\'' +
-                ", password='" + password + '\'' +
-                ", fullName='" + fullName + '\'' +
-                '}';
-    }
-}
+@Builder
+public record UserRequestDTO(
+    @NotBlank
+    String email,
+    @NotBlank
+    String password,
+    @NotBlank
+    String fullName
+) {}
