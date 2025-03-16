@@ -4,6 +4,8 @@ package com.cassiorp.auth.service;
 import com.cassiorp.auth.api.dto.*;
 import com.cassiorp.auth.entity.User;
 import com.cassiorp.auth.exception.BadCredentialsException;
+import com.cassiorp.auth.exception.ForbiddenException;
+import com.cassiorp.auth.exception.UnauthorizedException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Service;
@@ -40,7 +42,7 @@ public class AuthenticationService {
   }
 
   private User authenticate(LoginRequestDTO loginRequestDTO) {
-    User user = userService.findUserById(loginRequestDTO.email());
+    User user = userService.findUserByEmail(loginRequestDTO.email());
     UsernamePasswordAuthenticationToken authentication = buildUsernamePasswordAuthenticationToken(loginRequestDTO);
     authenticate(authentication);
     return user;
@@ -78,7 +80,14 @@ public class AuthenticationService {
   }
 
   public void authorization(AuthorizationRequestDTO authorizationRequestDTO) {
-    jwtService.valitadeToken(authorizationRequestDTO.token());
+    String extractUsername = jwtService.extractUsername(authorizationRequestDTO.token());
+    User user = userService.findUserById(authorizationRequestDTO.userId());
+    if (!extractUsername.equals(user.getEmail())) {
+      throw new ForbiddenException("Token does not belong to the authenticated user");
+    }
+    if (jwtService.isTokenExpired(authorizationRequestDTO.token())) {
+      throw new UnauthorizedException("Expired token!");
+    }
   }
 
 }

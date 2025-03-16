@@ -33,8 +33,6 @@ public class AuthenticationController {
     return ResponseEntity.ok(loginResponseDTO);
   }
 
-  //TODO Status code
-  // Authorization and req y res
   @PostMapping("/authorization")
   public void authorization(@RequestBody AuthorizationRequestDTO authorizationRequestDTO) {
     authenticationService.authorization(authorizationRequestDTO);

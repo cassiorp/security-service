@@ -6,5 +6,5 @@ import lombok.Builder;
 public record AuthorizationRequestDTO(
     String token,
     String operation,
-    Long userId
+    String userId
 ) {}

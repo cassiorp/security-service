@@ -1,6 +1,5 @@
 package com.cassiorp.auth.service;
 
-import com.cassiorp.auth.api.dto.LoginRequestDTO;
 import com.cassiorp.auth.entity.User;
 import com.cassiorp.auth.exception.ConflictException;
 import com.cassiorp.auth.exception.EntityNotFoundException;
@@ -9,6 +8,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 @Service
 public class UserService {
@@ -43,9 +44,15 @@ public class UserService {
     }
   }
 
-  public User findUserById(String email) {
+  public User findUserByEmail(String email) {
     return userRepository
         .findByEmail(email)
+        .orElseThrow(() -> new EntityNotFoundException(USER_NOT_FOUND_ERROR));
+  }
+
+  public User findUserById(String id) {
+    return userRepository
+        .findById(id)
         .orElseThrow(() -> new EntityNotFoundException(USER_NOT_FOUND_ERROR));
   }
 }

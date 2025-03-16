@@ -1,16 +1,16 @@
 package com.cassiorp.auth.service;
 
+import com.cassiorp.auth.exception.UnauthorizedException;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.security.SignatureException;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.security.Key;
 import java.util.Date;
@@ -26,19 +26,21 @@ public class JwtService {
   @Value("${auth.app.jwtExpiration}")
   private long jwtExpiration;
 
-  private final UserDetailsService userDetailsService;
-
-  public JwtService(UserDetailsService userDetailsService) {
-    this.userDetailsService = userDetailsService;
-  }
 
   public String extractUsername(String token) {
     return extractClaim(token, Claims::getSubject);
+
   }
 
   public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
-    final Claims claims = extractAllClaims(token);
-    return claimsResolver.apply(claims);
+    try {
+      final Claims claims = extractAllClaims(token);
+      return claimsResolver.apply(claims);
+    } catch (SignatureException ex) {
+      throw new UnauthorizedException("Invalid signature!");
+    }catch (ExpiredJwtException ex) {
+      throw new UnauthorizedException(ex.getMessage());
+    }
   }
 
   public String generateToken(UserDetails userDetails) {
@@ -68,13 +70,9 @@ public class JwtService {
         .compact();
   }
 
-  public boolean isTokenValid(String token, UserDetails userDetails) {
-    final String username = extractUsername(token);
-    return (username.equals(userDetails.getUsername())) && !isTokenExpired(token);
-  }
-
-  private boolean isTokenExpired(String token) {
-    return extractExpiration(token).before(new Date());
+  public boolean isTokenExpired(String token) {
+    Date date = extractExpiration(token);
+    return date.before(new Date());
   }
 
   private Date extractExpiration(String token) {
@@ -96,25 +94,4 @@ public class JwtService {
   }
 
 
-  public void valitadeToken(String token) {
-
-    if (isTokenExpired(token)) {
-      throw new ResponseStatusException(
-          HttpStatus.UNAUTHORIZED,
-          "Token has expired"
-      );
-    }
-
-    String extractUsername = extractUsername(token);
-    UserDetails userDetails = this.userDetailsService.loadUserByUsername(extractUsername);
-
-    String username = userDetails.getUsername();
-    if (!extractUsername.equals(username)) {
-      throw new ResponseStatusException(
-          HttpStatus.FORBIDDEN,
-          "Token does not belong to the authenticated user"
-      );
-    }
-
-  }
 }
