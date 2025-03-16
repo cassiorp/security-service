@@ -1,14 +1,15 @@
 package com.cassiorp.auth.service;
 
 
-import com.cassiorp.auth.api.dto.LoginRequestDTO;
-import com.cassiorp.auth.api.dto.LoginResponseDTO;
-import com.cassiorp.auth.api.dto.UserRequestDTO;
-import com.cassiorp.auth.api.dto.UserResponseDTO;
+import com.cassiorp.auth.api.dto.*;
 import com.cassiorp.auth.entity.User;
+import com.cassiorp.auth.exception.BadCredentialsException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 import static com.cassiorp.auth.api.converter.UserConverter.toDTO;
 import static com.cassiorp.auth.api.converter.UserConverter.toEntity;
@@ -32,31 +33,52 @@ public class AuthenticationService {
     return toDTO(user);
   }
 
-  //TODO mensagem de erro caso senha invalida
-  private User authenticate(LoginRequestDTO loginRequestDTO) {
-    authenticationManager.authenticate(
-        new UsernamePasswordAuthenticationToken(
-            loginRequestDTO.email(),
-            loginRequestDTO.password()
-        )
-    );
-    return userService.findUserById(loginRequestDTO);
-  }
-
   public LoginResponseDTO authenticateUser(LoginRequestDTO loginRequestDTO) {
     User authenticatedUser = this.authenticate(loginRequestDTO);
     String jwtToken = jwtService.generateToken(authenticatedUser);
     return buildLoginResponseDTO(jwtToken);
   }
 
-  private LoginResponseDTO buildLoginResponseDTO(String jwtToken) {
-    return new LoginResponseDTO()
-        .setToken(jwtToken)
-        .setExpiresIn(jwtService.getExpirationTime());
+  private User authenticate(LoginRequestDTO loginRequestDTO) {
+    User user = userService.findUserById(loginRequestDTO.email());
+    UsernamePasswordAuthenticationToken authentication = buildUsernamePasswordAuthenticationToken(loginRequestDTO);
+    authenticate(authentication);
+    return user;
   }
 
-  public void validateToken(String token) {
-    jwtService.valitadeToken(token);
+  private void authenticate(UsernamePasswordAuthenticationToken authentication) {
+    try {
+      authenticationManager.authenticate(authentication);
+    } catch (Exception ex) {
+      throw new BadCredentialsException("Password incorrect");
+    }
+  }
+
+  private static UsernamePasswordAuthenticationToken buildUsernamePasswordAuthenticationToken(LoginRequestDTO loginRequestDTO) {
+    return new UsernamePasswordAuthenticationToken(
+        loginRequestDTO.email(),
+        loginRequestDTO.password()
+    );
+  }
+
+  private LoginResponseDTO buildLoginResponseDTO(String jwtToken) {
+    return LoginResponseDTO.builder()
+        .token(jwtToken)
+        .expiresAt(buildExpirationTime())
+        .build();
+  }
+
+  private LocalDateTime buildExpirationTime() {
+    return LocalDateTime.now()
+        .atZone(ZoneId.systemDefault())
+        .toInstant()
+        .plusMillis(jwtService.getExpirationTime())
+        .atZone(ZoneId.systemDefault())
+        .toLocalDateTime();
+  }
+
+  public void authorization(AuthorizationRequestDTO authorizationRequestDTO) {
+    jwtService.valitadeToken(authorizationRequestDTO.token());
   }
 
 }

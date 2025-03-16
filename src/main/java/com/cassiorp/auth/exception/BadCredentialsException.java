@@ -1,0 +1,11 @@
+package com.cassiorp.auth.exception;
+
+
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
+
+public class BadCredentialsException extends ResponseStatusException {
+  public BadCredentialsException(String reason) {
+    super(HttpStatus.UNAUTHORIZED, reason);
+  }
+}

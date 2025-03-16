@@ -97,22 +97,15 @@ public class JwtService {
 
 
   public void valitadeToken(String token) {
-    if (!token.startsWith("Bearer ")) {
-      throw new ResponseStatusException(
-          HttpStatus.BAD_REQUEST,
-          "Invalid token format"
-      );
-    }
-    final String jwt = token.substring(7);
 
-    if (isTokenExpired(jwt)) {
+    if (isTokenExpired(token)) {
       throw new ResponseStatusException(
           HttpStatus.UNAUTHORIZED,
           "Token has expired"
       );
     }
 
-    String extractUsername = extractUsername(jwt);
+    String extractUsername = extractUsername(token);
     UserDetails userDetails = this.userDetailsService.loadUserByUsername(extractUsername);
 
     String username = userDetails.getUsername();

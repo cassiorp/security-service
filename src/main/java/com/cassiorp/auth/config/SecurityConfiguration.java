@@ -19,7 +19,7 @@ public class SecurityConfiguration {
             .anyRequest().permitAll()
         )
         .sessionManagement(session -> session
-            .sessionCreationPolicy(SessionCreationPolicy.STATELESS) // API stateless
+            .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
         )
         .build();
   }

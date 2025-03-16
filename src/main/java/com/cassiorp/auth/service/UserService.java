@@ -43,9 +43,9 @@ public class UserService {
     }
   }
 
-  public User findUserById(LoginRequestDTO loginRequestDTO) {
+  public User findUserById(String email) {
     return userRepository
-        .findByEmail(loginRequestDTO.email())
+        .findByEmail(email)
         .orElseThrow(() -> new EntityNotFoundException(USER_NOT_FOUND_ERROR));
   }
 }

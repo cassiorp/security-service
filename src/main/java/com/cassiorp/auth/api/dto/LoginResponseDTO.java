@@ -1,33 +1,11 @@
 package com.cassiorp.auth.api.dto;
 
-public class LoginResponseDTO {
-    private String token;
+import lombok.Builder;
 
-    private long expiresIn;
+import java.time.LocalDateTime;
 
-    public String getToken() {
-        return token;
-    }
-
-    public LoginResponseDTO setToken(String token) {
-        this.token = token;
-        return this;
-    }
-
-    public long getExpiresIn() {
-        return expiresIn;
-    }
-
-    public LoginResponseDTO setExpiresIn(long expiresIn) {
-        this.expiresIn = expiresIn;
-        return this;
-    }
-
-    @Override
-    public String toString() {
-        return "LoginResponse{" +
-                "token='" + token + '\'' +
-                ", expiresIn=" + expiresIn +
-                '}';
-    }
-}
+@Builder
+public record LoginResponseDTO (
+    String token,
+    LocalDateTime expiresAt
+) {}
